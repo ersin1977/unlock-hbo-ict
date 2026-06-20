@@ -1,479 +1,489 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Unlock HBO-ICT — Escaperoom</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unlock HBO-ICT</title>
 <style>
   :root{
-    --bg:#0a0e1a; --panel:#121a2e; --panel2:#0e1424; --line:#1f2c47;
-    --text:#e8edf7; --muted:#8a98b8; --accent:#34e0a1; --accent2:#3fa9ff;
-    --warn:#ff5d6c; --gold:#ffd24a; --radius:16px;
-    --mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
-    --sans:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --bg:#12140C; --panel:#1F230F; --panel2:#191C0E; --line:#343A1E;
+    --olive:#9EA601; --lime:#BCD400; --amber:#E5A93A;
+    --light:#F6F8F0; --muted:#AEB39C; --muted2:#7E8568;
+    --ok:#BCD400; --okbg:#212a0d; --wrongbg:#2a230d;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:radial-gradient(1200px 700px at 50% -10%,#16213d 0%,var(--bg) 60%);
-    color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:780px;margin:0 auto;padding:26px 18px 80px}
-  header{text-align:center;margin-bottom:14px}
-  .brand{font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
-  h1{font-size:30px;margin:6px 0 2px;letter-spacing:1px}
-  h1 .lock{color:var(--accent)}
-  .sub{color:var(--muted);font-size:14px;line-height:1.5}
-
-  .codebar{display:flex;justify-content:center;gap:7px;margin:18px 0 6px;flex-wrap:wrap}
-  .frag{width:60px;height:62px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-family:var(--mono);}
-  .frag .n{font-size:9px;color:var(--muted)}
-  .frag .v{font-size:24px;font-weight:700;color:#34405e}
-  .frag.done{border-color:var(--accent);background:rgba(52,224,161,.08)}
-  .frag.done .v{color:var(--accent)}
-  .frag.current{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(63,169,255,.2)}
-
-  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);border:1px solid var(--line);
-    border-radius:var(--radius);padding:22px;margin:14px 0;box-shadow:0 12px 30px rgba(0,0,0,.35);}
-  h2{margin:0 0 4px;font-size:21px}
-  h3{margin:0 0 8px;font-size:17px}
-
-  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px}
-  input[type=text],textarea{width:100%;background:#0c1322;border:1px solid var(--line);color:var(--text);
-    border-radius:10px;padding:11px 12px;font-size:14px;font-family:var(--sans);}
-  textarea{min-height:120px;resize:vertical;line-height:1.6}
-  input:focus,textarea:focus{outline:none;border-color:var(--accent2)}
-
-  button{appearance:none;border:0;border-radius:10px;cursor:pointer;font-weight:700;padding:12px 20px;
-    font-size:14px;background:var(--accent);color:#04140d;transition:transform .05s,filter .15s;margin-top:16px;}
-  button:hover{filter:brightness(1.08)} button:active{transform:translateY(1px)}
-  button.ghost{background:#1b2742;color:var(--text);border:1px solid var(--line)}
-  button:disabled{opacity:.4;cursor:not-allowed}
-
-  .q{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0;background:#0c1322}
-  .q.correct{border-color:var(--accent);background:rgba(52,224,161,.06)}
-  .q.wrong{border-color:var(--warn);background:rgba(255,93,108,.06)}
-  .qtext{font-size:14px;font-weight:600;margin-bottom:10px}
-  .opt{display:flex;gap:9px;align-items:flex-start;padding:7px 9px;border-radius:8px;font-size:14px;cursor:pointer}
-  .opt:hover{background:#101a30}
-  .opt input{margin-top:3px}
-  .qmark{float:right;font-family:var(--mono);font-size:12px}
-  .q.correct .qmark{color:var(--accent)} .q.wrong .qmark{color:var(--warn)}
-
-  .hint{background:rgba(63,169,255,.08);border:1px solid var(--accent2);border-radius:12px;padding:14px 16px;margin-top:14px}
-  .hint .lab{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);font-family:var(--mono)}
-  .hint .txt{font-size:16px;margin-top:5px}
-  .reveal{margin-top:14px;text-align:center;font-family:var(--mono);background:rgba(52,224,161,.08);
-    border:1px solid var(--accent);border-radius:12px;padding:14px}
-  .reveal .big{font-size:34px;font-weight:800;color:var(--accent);letter-spacing:4px}
-  .msg{margin-top:12px;font-size:13px;font-family:var(--mono);min-height:18px}
-  .msg.err{color:var(--warn)} .msg.ok{color:var(--accent)}
-
-  .granted{font-size:38px;font-weight:900;color:var(--accent);letter-spacing:3px;text-align:center;margin:10px 0}
-  .mastercode{text-align:center;font-family:var(--mono);font-size:40px;font-weight:800;letter-spacing:10px;
-    color:var(--gold);background:#0c1322;border:1px dashed var(--gold);border-radius:12px;padding:16px;margin:12px 0}
-  .jobs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
-  .job{background:#162038;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px}
-
-  .pill{display:inline-block;background:#162038;border:1px solid var(--line);border-radius:999px;padding:3px 10px;
-    font-size:11px;color:var(--muted);font-family:var(--mono)}
-  .progresstxt{text-align:center;color:var(--muted);font-size:13px;font-family:var(--mono);margin-top:4px}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:28px;line-height:1.7}
-  footer a{color:var(--accent2);text-decoration:none}
-  .note{font-size:12px;color:var(--muted);font-style:italic;margin-top:8px}
-
-  /* admin / print */
-  .qrgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
-  .qrcard{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:#111;text-align:center}
-  .qrcard img{width:100%;max-width:200px;height:auto}
-  .qrcard .t{font-weight:700;font-size:13px;margin:6px 0 2px}
-  .qrcard .d{font-size:11px;color:#555}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--light);font-family:var(--sans);line-height:1.5;
+    padding:20px 16px 60px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:600px;margin:0 auto}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--lime);
+    text-transform:uppercase;margin:0 0 6px}
+  h1{font-family:var(--mono);font-size:26px;line-height:1.15;margin:0 0 4px;font-weight:700}
+  h1 .g{color:var(--lime)}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .progress{font-family:var(--mono);letter-spacing:.18em;font-size:24px;color:var(--lime);
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+    text-align:center;margin:0 0 20px}
+  .progress small{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted2);margin-top:6px}
+  .story{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--lime);
+    border-radius:10px;padding:14px 16px;margin:0 0 22px;font-size:15px;color:#E9ECDD}
+  .story b{color:var(--lime)}
+  .hintbox{background:var(--panel2);border:1px dashed var(--olive);border-radius:12px;padding:16px;
+    margin:18px 0;font-size:15.5px;font-style:italic;color:#EEF1E2}
+  .hintbox .lbl{display:block;font-family:var(--mono);font-style:normal;font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:14px 14px 12px;margin:0 0 12px}
+  .card .q{font-size:15px;margin:0 0 10px;color:#EEF1E2;font-weight:600}
+  .card.correct{border-color:var(--ok);background:var(--okbg)}
+  .card.wrong{border-color:var(--amber);background:var(--wrongbg)}
+  .card .badge{display:none;font-family:var(--mono);font-size:11px;letter-spacing:.05em;margin-top:9px}
+  .card.correct .badge.ok{display:inline-block;color:var(--lime)}
+  .card.wrong .badge.no{display:inline-block;color:var(--amber)}
+  .opt{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border:1px solid var(--line);
+    border-radius:9px;margin:6px 0;cursor:pointer;background:#0E1108;font-size:14.5px}
+  .opt:hover{border-color:var(--muted2)}
+  .opt input{margin-top:3px;accent-color:var(--lime);flex:0 0 auto}
+  input[type=text],input[type=number]{width:100%;background:#0E1108;color:var(--light);
+    border:1px solid var(--line);border-radius:9px;padding:11px 12px;font-size:15px;font-family:var(--sans)}
+  input:focus-visible,.opt:focus-within{outline:2px solid var(--lime);outline-offset:2px;border-color:var(--lime)}
+  .nonscore{margin-top:14px;border-top:1px dashed var(--line);padding-top:8px}
+  .nonscore .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase}
+  button{font-family:var(--mono);font-size:14px;letter-spacing:.04em;border-radius:10px;
+    padding:13px 18px;cursor:pointer;border:1px solid transparent;font-weight:700}
+  .btn-go{background:var(--lime);color:#16180D;width:100%;margin-top:6px}
+  .btn-go:hover{background:#cde400}
+  .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+  .btn-ghost:hover{color:var(--light);border-color:var(--muted2)}
+  button:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+  .status{font-family:var(--mono);font-size:13px;margin:14px 0 0;min-height:18px;color:var(--amber);text-align:center}
+  .reveal{margin:20px 0 0;border:1.5px solid var(--lime);border-radius:14px;background:var(--panel);
+    padding:22px 18px;text-align:center}
+  .reveal .granted{font-family:var(--mono);font-size:13px;letter-spacing:.16em;color:var(--lime);margin:0 0 8px}
+  .reveal .big{font-family:var(--mono);font-size:56px;font-weight:700;color:var(--light);letter-spacing:.08em;margin:4px 0 8px;line-height:1}
+  .reveal p{font-size:14.5px;color:#E9ECDD;margin:6px 0 0}
+  .lock{width:34px;height:34px;display:block;margin:0 auto 10px}
+  .note{margin:26px 0 0;border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--muted2);line-height:1.55}
+  /* beheer */
+  .field{margin:14px 0}
+  .field label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted2);margin-bottom:6px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:20px}
+  .qrcard{background:#fff;color:#16180D;border-radius:12px;padding:14px;text-align:center}
+  .qrcard h4{margin:0 0 4px;font-size:14px;font-family:var(--mono)}
+  .qrcard .meta{font-size:11px;color:#444;margin:0 0 8px;min-height:30px}
+  .qrcard img{width:100%;max-width:200px;height:auto;background:#fff}
+  .reftable{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px}
+  .reftable th,.reftable td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+  .reftable th{background:var(--panel);color:var(--lime);font-family:var(--mono);font-size:12px}
+  .sectiontitle{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--olive);
+    text-transform:uppercase;margin:24px 0 4px}
   @media print{
-    body{background:#fff} .wrap{max-width:100%}
+    body{background:#fff;color:#000;padding:0}
     .noprint{display:none!important}
+    .qrcard{border:1px solid #ccc;page-break-inside:avoid}
     .qrgrid{grid-template-columns:repeat(2,1fr)}
-    .qrcard{break-inside:avoid;border:1px solid #999}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">De Haagse Hogeschool · Introductieweek</div>
-    <h1>Unlock <span class="lock">HBO-ICT</span> 🔒</h1>
-  </header>
-  <div class="codebar" id="codebar"></div>
-  <div class="progresstxt" id="progresstxt"></div>
-  <main id="app"></main>
-  <footer>
-    <span class="noprint"><a href="#beheer">🛠️ Beheer &amp; QR-codes printen</a> · <a href="#reset" onclick="return confirm('Voortgang van deze squad wissen?')">opnieuw beginnen</a><br></span>
-    Digitaal prototype · Module 6 — Project (Design Thinking) · Opdrachtgever: Chris Dina
-  </footer>
-</div>
+<main class="wrap" id="app"></main>
 
 <script>
-/* ===================== CATEGORIEËN & VRAGEN (voorbeeldinhoud, vrij aan te passen) ===================== */
-function Q(q,opts,a){return{q,opts,a};}
-const CATS = [
-  { name:"Welkom & medestudenten", digit:"7",
-    hint:"Zoek bij de centrale balie in de hal (begane grond).",
-    questions:[
-      Q("Wat doet een &#8216;squad&#8217; tijdens de introductie?",["Samen opdrachten oplossen","College geven","Cijfers nakijken","Roosters maken"],0),
-      Q("Hoeveel medestudenten spreek je minimaal bij Mensenmatch?",["2 à 3","1","8","20"],0),
-      Q("Wat is het doel van de introductieweek?",["Kennismaken met de opleiding én elkaar","Meteen tentamens","Direct stage","Afstuderen"],0),
-      Q("Wat hoort bij een goede kennismaking?",["Je naam en opleiding noemen","Niets zeggen","Weglopen","Op je telefoon kijken"],0),
-      Q("Hoe heet jullie opleiding?",["HBO-ICT","MBO-ICT","WO-Informatica","VMBO-T"],0),
-      Q("Een introductiementor is meestal een…",["Ouderejaars student","Decaan","Rector","Conciërge"],0),
-      Q("Wat is een goede openingsvraag om iemand te leren kennen?",["Waar kom je vandaan?","Wat is je BSN?","Wat is je wachtwoord?","Niets"],0),
-      Q("Wat betekent samenwerken in een team?",["Samen aan één doel werken","Alleen werken","Ruzie maken","Afkijken"],0),
-      Q("Waar is de borrel aan het eind voor bedoeld?",["Informeel napraten","Tentamen maken","Opruimen","Vertrekken"],0),
-      Q("Hoe draag je bij aan een fijne sfeer in de squad?",["Anderen erbij betrekken","Mensen negeren","Steeds onderbreken","Klagen"],0),
-      Q("Hoeveel studenten doen er maximaal mee aan de escaperoom?",["50","5","500","5000"],0),
-      Q("Waaruit is de mastercode uiteindelijk opgebouwd?",["De cijfers van alle categorieën","Je leeftijd","Het rooster","Niets"],0),
-    ]},
-  { name:"Hulp & ondersteuning", digit:"3",
-    hint:"Zoek bij de balie van de studentendecaan (1e verdieping).",
-    questions:[
-      Q("Wie helpt je met studiekeuze en planning?",["De SLB&#8217;er","De conciërge","De kantinemedewerker","De beveiliging"],0),
-      Q("Naar wie ga je bij persoonlijke omstandigheden of geldzorgen?",["De decaan","De tutor","De roostermaker","De gymdocent"],0),
-      Q("Wie geeft extra uitleg bij de lesstof?",["De tutor","De decaan","De receptie","De directeur"],0),
-      Q("Je wifi of laptop werkt niet. Naar wie ga je?",["De IT-helpdesk","De SLB&#8217;er","De decaan","De mediatheek"],0),
-      Q("Waar staat de afkorting SLB voor?",["Studieloopbaanbegeleiding","Studieleenbank","Snelle Lunch Buffet","Systeembeheer"],0),
-      Q("Waar meld je je ziek?",["Volgens de schoolprocedure (o.a. SIS)","Bij een medestudent","Nergens","Op social media"],0),
-      Q("Je hebt een vraag over je cijfers. Bij wie kun je terecht?",["Docent of SLB&#8217;er","Beveiliging","Kantine","Buschauffeur"],0),
-      Q("Waarvoor is een vertrouwenspersoon?",["Vervelende of onveilige situaties","Roosterwijzigingen","Printproblemen","Parkeren"],0),
-      Q("Waar vind je de openingstijden van de helpdesk?",["Op de website of het portal","In de kantine","Op straat","Nergens"],0),
-      Q("Wat doe je bij twijfel over je opleiding?",["Een gesprek vragen met je SLB&#8217;er","Zomaar stoppen","Niets","Online klagen"],0),
-      Q("Waar helpt de studieadviseur mee?",["Studievoortgang en regels","Eten koken","Schoonmaken","Sporten"],0),
-      Q("Wat is een goede eerste stap bij een probleem?",["Hulp vragen aan de juiste persoon","Het negeren","Boos worden","Opgeven"],0),
-    ]},
-  { name:"Digitale leeromgeving", digit:"9",
-    hint:"Zoek bij de computerruimte (lokaal D2.14).",
-    questions:[
-      Q("Waar staan je cursussen, deadlines en cijfers?",["Brightspace","Word","Paint","Spotify"],0),
-      Q("Waarmee mail je officieel met school?",["Je schoolmail (Outlook)","Privé Gmail","WhatsApp","TikTok"],0),
-      Q("Welk programma gebruik je voor online overleg en lessen?",["Teams","Photoshop","Alleen Excel","Niets"],0),
-      Q("Wat betekent &#8216;reply&#8217; in een e-mail?",["Beantwoorden","Verwijderen","Doorsturen","Archiveren"],0),
-      Q("Waarvoor gebruik je CC in een e-mail?",["Iemand laten meelezen","Iets verwijderen","Spam maken","Een bijlage"],0),
-      Q("Waar vind je je rooster?",["In het roostersysteem (SIS)","In een forum","Op het kantinebord","Nergens"],0),
-      Q("Wat is een &#8216;deadline&#8217;?",["Het uiterste inlevermoment","De startdatum","Een pauze","Een vakantie"],0),
-      Q("Hoe lever je meestal een opdracht in?",["Via een Brightspace-opdracht","Per briefpost","Per fax","Mondeling"],0),
-      Q("Hoe ziet een schoolmailadres er meestal uit?",["…@student.hhs.nl","…@gmail.com","…@hotmail.com","…@school.tv"],0),
-      Q("Waarvoor is een wachtwoordmanager handig?",["Veilig wachtwoorden bewaren","Gamen","Tekenen","Muziek"],0),
-      Q("Waar zie je aankondigingen van docenten?",["In Brightspace of je mail","Op tv","In de krant","Op de radio"],0),
-      Q("Wat doe je met een onbekende bijlage in een mail?",["Niet zomaar openen","Direct openen","Naar iedereen doorsturen","Printen"],0),
-    ]},
-  { name:"Rooster, planning & studiepunten", digit:"1",
-    hint:"Zoek bij het mededelingenbord naast lokaal A1.08.",
-    questions:[
-      Q("Hoeveel EC is één voltijd studiejaar?",["60","30","100","10"],0),
-      Q("Waar staat de afkorting EC voor?",["European Credits (studiepunten)","Extra College","Examen Cijfer","Euro Cent"],0),
-      Q("Uit hoeveel periodes bestaat een studiejaar meestal?",["4","2","12","1"],0),
-      Q("Waar check je roosterwijzigingen?",["In het roostersysteem (SIS)","In de kantine","In de sportzaal","Nergens"],0),
-      Q("Wat is timeboxing?",["Een vaste tijd per taak afspreken","Dozen inpakken","Boksen","Pauze nemen"],0),
-      Q("Wat is een &#8216;college&#8217;?",["Een onderwijsles","Een gebouw","Een cijfer","Een pauze"],0),
-      Q("Wat betekent &#8216;propedeuse&#8217;?",["Het eerstejaars diploma-onderdeel","De eindscriptie","De stage","De minor"],0),
-      Q("Hoeveel EC is een gemiddelde module vaak?",["Ongeveer 15","1","60","0"],0),
-      Q("Hoe begin je je studiedag het best?",["Je rooster checken","Improviseren","Thuisblijven","Gokken"],0),
-      Q("Wat doe je bij twee afspraken die overlappen?",["Plannen en prioriteren","Beide negeren","Loten","Niets"],0),
-      Q("Wat vraagt een week vol deadlines vooral?",["Vooruit plannen","Uitstellen","Niets doen","Paniek"],0),
-      Q("Waar zie je in welk lokaal je les hebt?",["In het rooster","Op je telefoonachtergrond","In de kantine","Nergens"],0),
-    ]},
-  { name:"Campus & praktische zaken", digit:"5",
-    hint:"Zoek bij de ingang van het sportcentrum.",
-    questions:[
-      Q("Waar vind je een stille plek om te studeren?",["De mediatheek","De kantine","De sportzaal","De parkeerplaats"],0),
-      Q("Waar haal je iets te eten tussen de lessen?",["De kantine","De mediatheek","De serverruimte","De docentenkamer"],0),
-      Q("Waar ga je heen met een vraag over je inschrijving of collegekaart?",["De servicebalie","De sportzaal","De kantine","De fietsenstalling"],0),
-      Q("Waar kun je sporten na college?",["Het sportcentrum","De mediatheek","De serverruimte","De kantine"],0),
-      Q("Waar regel je vaak je print- of OV-tegoed?",["Bij de servicebalie of automaat","Bij de frituur","Thuis op tv","Nergens"],0),
-      Q("Wanneer gebruik je een nooduitgang?",["Bij ontruiming of alarm","In de pauze","Tijdens de lunch","Altijd"],0),
-      Q("Waar parkeer je je fiets?",["In de fietsenstalling","In de hal","In de lift","In de kantine"],0),
-      Q("Waar meld je verloren spullen?",["Bij de receptie / gevonden voorwerpen","Bij een medestudent","Nergens","In de bus"],0),
-      Q("Waar vind je een plattegrond van het gebouw?",["Bij de ingang of op de website","In de prullenbak","In de lift","Nergens"],0),
-      Q("Waar vind je de toiletten meestal?",["Per verdieping aangegeven","Alleen buiten","In de serverruimte","Nergens"],0),
-      Q("Waarvoor gebruik je je collegekaart?",["Toegang en identificatie","Pizza bestellen","Tv kijken","Niets"],0),
-      Q("Waar meld je je als bezoeker?",["Bij de receptie","In de kantine","In de lift","Op het dak"],0),
-    ]},
-  { name:"Veiligheid & ICT-basics", digit:"4",
-    hint:"Zoek bij de IT-helpdesk (begane grond).",
-    questions:[
-      Q("Wat is een sterk wachtwoord?",["Lang, uniek en met verschillende tekens","123456","Je eigen naam","wachtwoord"],0),
-      Q("Wat is de extra beveiliging naast je wachtwoord?",["Tweestapsverificatie (MFA)","Niets","Een sticker","Een hoofdletter"],0),
-      Q("Hoe heet het wifi-netwerk op de HHS vaak?",["eduroam","gratiswifi","McWifi","thuis"],0),
-      Q("Mag je je wachtwoord delen met een klasgenoot?",["Nee, nooit","Altijd","Soms","Op vrijdag"],0),
-      Q("Wat doe je met een verdachte (phishing-)mail?",["Niet klikken en melden","Erop klikken","Bankgegevens sturen","Naar iedereen doorsturen"],0),
-      Q("Wat doe je als je je laptop even achterlaat?",["Het scherm vergrendelen","Open laten staan","De stroom eraf trekken","Niets"],0),
-      Q("Waarom maak je een back-up?",["Om je data niet te verliezen","Om sneller te gamen","Voor een mooier scherm","Nergens voor"],0),
-      Q("Hoe ga je om met persoonsgegevens?",["Alleen delen waar nodig en veilig","Overal online zetten","Met iedereen delen","Op posters hangen"],0),
-      Q("Hoe vaak doe je software-updates?",["Regelmatig installeren","Nooit","Alleen in 2010","Willekeurig"],0),
-      Q("Wat doe je met een gevonden USB-stick van onbekende?",["Niet zomaar gebruiken","Direct insteken","Uitdelen","Verkopen"],0),
-      Q("Wat doe je bij een hack of beveiligingsincident?",["Melden bij de IT-helpdesk","Het verzwijgen","Zelf terughacken","Niets"],0),
-      Q("Wat betekent &#8216;https&#8217; in een webadres onder andere?",["Een versleutelde verbinding","Een virus","Niets","Een spelletje"],0),
-    ]},
-  { name:"Opleiding & werkveld", digit:"8",
-    hint:"Zoek bij de prijzenkast in de aula — de finaleplek.",
-    questions:[
-      Q("Hoeveel jaar duurt een hbo-bachelor (voltijd)?",["4","1","2","7"],0),
-      Q("Welke werkwijze gebruikt jullie projectteam in module 6?",["Agile / Scrum (met sprints)","Geen enkele","Alleen solo","Loten"],0),
-      Q("Wat doet een Software Developer vooral?",["Software bouwen en onderhouden","Koken","Schoonmaken","Rijden"],0),
-      Q("Waar richt een Security Specialist zich op?",["Systemen en data beveiligen","Tuinieren","Verkopen","Tekenen"],0),
-      Q("Waar werkt een Data Engineer mee?",["Datapijplijnen en data","Beton","Verf","Hout"],0),
-      Q("Wat ontwerpt een UX/Frontend-ontwerper?",["Schermen en de gebruikerservaring","Motoren","Recepten","Gebouwen"],0),
-      Q("Wanneer loop je meestal stage?",["Verderop in de opleiding","Vóór je start","Nooit","In de pauze"],0),
-      Q("Wat is een &#8216;minor&#8217;?",["Een keuzeverdieping of -verbreding","Een tentamen","Een lokaal","Een docent"],0),
-      Q("Waarmee rond je de opleiding af?",["Een afstudeerproject / scriptie","Een quiz","Een pauze","Een borrel"],0),
-      Q("Welke fasen horen bij Design Thinking?",["Empathize, Define, Ideate…","Eten, Slapen…","Niets","Onbekend"],0),
-      Q("Wat is een &#8216;stand-up&#8217; in een team?",["Een korte dagelijkse teammeeting","Een comedyshow","Een pauze","Een tentamen"],0),
-      Q("Wat onthult de finale van dit spel?",["Een eerste blik op het werkveld","Je cijfers","Het weer","Niets"],0),
-    ]},
+/* ============ CONFIG ============ */
+var CATS = [
+  {n:1, name:"Welkom & de opleiding",        digit:"2", hint:"Ik heb een prikbord, die is gekocht van V&D."},
+  {n:2, name:"De digitale leeromgeving",     digit:"4", hint:"Ik ontdek de wereld tijdens het fietsen. Ik fiets, maar ik kom geen meter vooruit."},
+  {n:3, name:"Hulp & ondersteuning",         digit:"0", hint:"Ik hou van duurzaamheid, daarom gooi ik mijn lege statiegeldflessen hierin."},
+  {n:4, name:"Het werkveld & ICT-beroepen",  digit:"7", hint:"7 broers die wonen tegenover huisnummer 6.75."},
+  {n:5, name:"Het gebouw & faciliteiten",    digit:"0", hint:"Ik loop door de gang van de 6e verdieping, lokaal 6.53 aan mijn linkerzijde. Ineens een waarschuwing: \u2018A.U.B. wachten, luik gaat vanzelf open.\u2019"},
+  {n:6, name:"Medestudenten & samenwerken",  digit:"6", hint:"Op school gelden regels: geen lawaai, netjes lopen en praten. Maar ergens op deze verdieping is \u00E9\u00E9n kamer waar dat niet geldt \u2014 waar je mag schreeuwen, lachen en losgaan. Klein kamertje, groot geheim. De kamer is precies 5 bij 5. Reken maar uit welke deur je zoekt."},
+  {n:7, name:"Docenten & de eerstejaarsvakken", digit:"5", hint:"Ik sta hier de hele dag en niemand kijkt echt naar me. Ze komen, drukken op een knopje, pakken hun bekertje en weg zijn ze. Maar jij ziet dat ik meer te bieden heb. \u2018Good coffee is always a good idea.\u2019"}
 ];
-const N = CATS.length;            // 7
-const MASTER = CATS.map(c=>c.digit).join('');   // 7 cijfers
-const JOBS = ["💻 Software Developer","🛡️ Security Specialist","🗄️ Data Engineer","☁️ Cloud Engineer","🎨 UX / Frontend"];
+var MASTERCODE = CATS.map(function(c){return c.digit;}).join(""); // 2407065
 
-/* ===================== STATE (onthouden in de browser) ===================== */
-const KEY='unlockHboCatState';
-function load(){ try{return JSON.parse(localStorage.getItem(KEY));}catch(e){return null;} }
-function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
-function freshState(start){ return {team:'', members:[], start:start||0, solved:Array(N).fill(false)}; }
+/* ============ VRAGEN ============ */
+var TF=["Waar","Niet waar"];
+var Q = {
+1:[
+ {q:"Hoeveel ECTS moet je in totaal behalen voor de hele Bachelor ICT?",t:"radio",o:["120","180","240","300"],c:2},
+ {q:"Hoeveel uur moet je minimaal per week uittrekken voor je studie?",t:"radio",o:["Minimaal 10 uur","Minimaal 16 uur","Minimaal 20 uur"],c:2},
+ {q:"Na het eerste jaar kies je een specialisme. Welke twee horen daarbij? (kies er 2)",t:"multi",o:["Software engineering","Netwerkbeheer","Database & Power BI","Cyber security","IT management"],c:[0,2],max:2},
+ {q:"Wat is de Engelstalige naam van De Haagse Hogeschool?",t:"radio",o:["The Dutch University","The Hague University of Applied Sciences","Hague State University","University of The Netherlands"],c:1},
+ {q:"Welke drie steden hebben een vestiging van De Haagse Hogeschool? (kies er 3)",t:"multi",o:["Den Haag","Rijswijk","Zoetermeer","Delft","Leiden","Rotterdam"],c:[0,1,2],max:3},
+ {q:"Hoeveel studenten heeft De Haagse Hogeschool ongeveer?",t:"radio",o:["5.000","10.000","15.000","20.000","26.000"],c:4},
+ {q:"Hoeveel studiepunten kun je per module verdienen?",t:"open",a:10},
+ {q:"Hoe noem je de eerste fase van je opleiding waarin gekeken wordt of de studie bij je past?",t:"radio",o:["Afstudeerfase","Propedeuse","Minorfase","Stagefase"],c:1},
+ {q:"Wat is volgens studenten vaak het moeilijkste in de eerste weken?",t:"radio",o:["Het gebouw vinden","De juiste lokalen vinden","Namen onthouden","Alle bovenstaande antwoorden"],c:3},
+ {q:"Waar of niet waar: je mag altijd vragen stellen aan docenten als je iets niet begrijpt.",t:"radio",o:TF,c:0},
+ {q:"Waar of niet waar: je hoeft nooit samen te werken met andere studenten.",t:"radio",o:TF,c:1},
+ {q:"Waar of niet waar: op De Haagse Hogeschool zijn veel groepsopdrachten.",t:"radio",o:TF,c:0},
+ {q:"Hoeveel keer mag je een module herkansen?",t:"open",a:1}
+],
+2:[
+ {q:"Hoe heet het digitale platform waar je cursusmateriaal vindt en opdrachten inlevert?",t:"radio",o:["Osiris","Brightspace","MyHHs","Lustre"],c:1},
+ {q:"Voor welke zaken kun je bij Osiris terecht? (kies er 3)",t:"multi",o:["Resultaten en cijfers","Studievoortgang (behaalde EC)","In- en uitschrijven voor vakken en toetsen","Informatie over cursusinhoud","Aanmelding en documenten uploaden"],c:[0,1,2],max:3},
+ {q:"Waarom is het belangrijk om je studentenmail regelmatig te controleren?",t:"radio",o:["Voor grappige memes","Omdat docenten en de opleiding daar belangrijke informatie sturen","Om meer opslagruimte te krijgen","Dat is niet nodig"],c:1},
+ {q:"Waar of niet waar: belangrijke deadlines vind je vaak terug in de digitale leeromgeving.",t:"radio",o:TF,c:0},
+ {q:"Welke tool wordt vaak gebruikt voor online vergaderingen en samenwerken?",t:"radio",o:["Paint","Microsoft Teams","Spotify","Netflix"],c:1},
+ {q:"Wat doe je als je je wachtwoord bent vergeten?",t:"radio",o:["Een nieuw account maken","De ICT-helpdesk of wachtwoordherstel gebruiken","Stoppen met studeren","Het wachtwoord raden"],c:1},
+ {q:"Waarom upload je opdrachten via de digitale leeromgeving?",t:"radio",o:["Zodat docenten ze kunnen beoordelen","Om opslagruimte vrij te maken","Omdat printen verboden is","Voor extra studiepunten"],c:0},
+ {q:"Wat is verstandig voordat je een opdracht inlevert?",t:"radio",o:["Controleren of het juiste bestand is ge\u00FCpload","Meteen uitloggen","Het bestand verwijderen","Niets"],c:0},
+ {q:"Waar of niet waar: je digitale agenda kan helpen bij het plannen van lessen en deadlines.",t:"radio",o:TF,c:0},
+ {q:"Wat betekent een melding van een nieuwe aankondiging in Brightspace meestal?",t:"radio",o:["Er is belangrijke informatie geplaatst","Je hebt een prijs gewonnen","Je bent uitgeschreven","Je computer moet opnieuw opstarten"],c:0},
+ {q:"Hoe vaak denk je dat een gemiddelde student per dag inlogt op de digitale leeromgeving?",t:"open",score:false},
+ {q:"Noem \u00E9\u00E9n voordeel van een digitale leeromgeving.",t:"open",score:false,text:true},
+ {q:"Je ontdekt 10 minuten voor de deadline dat je het verkeerde bestand hebt ge\u00FCpload. Wat doe je?",t:"radio",o:["Snel het juiste bestand uploaden","Doen alsof het expres was","Je laptop uitzetten","Verhuizen naar een hutje op de hei"],c:0,score:false}
+],
+3:[
+ {q:"Waar kun je terecht als je een studiegerelateerd probleem hebt?",t:"radio",o:["Bij een docent","Bij de studiebegeleider / SLB'er","Bij de receptie"],c:1},
+ {q:"Wat is de primaire rol van een Studieloopbaanbegeleider (SLB)?",t:"radio",o:["Het nakijken van al je programmeercodes","Het regelen van je rooster en vakinhoudelijke vragen","Je begeleiden bij je professionele ontwikkeling en studievoortgang","Het afnemen van mondelinge tentamens"],c:2},
+ {q:"Wat moet je doen als je door een functiebeperking extra tijd nodig hebt voor tentamens?",t:"radio",o:["Niets, dit gaat automatisch","Een verzoek indienen bij de examencommissie via de Studentendecaan","Dit op de dag van het tentamen aan de surveillant vragen","Een mail sturen naar de directeur"],c:1},
+ {q:"Wat moet je doen als je moeite hebt met een vak?",t:"radio",o:["Niets doen","Wachten tot het tentamen","Op tijd hulp vragen aan docent of studiecoach","Stoppen met de opleiding"],c:2},
+ {q:"Wat is vaak de taak van een studiecoach?",t:"radio",o:["Tentamens nakijken","Begeleiden bij studie- en persoonlijke ontwikkeling","Roosters maken","Cijfers invoeren"],c:1},
+ {q:"Waar kun je meestal terecht voor hulp bij het zoeken van betrouwbare bronnen?",t:"radio",o:["De bibliotheek","De parkeerplaats","De receptie","Het sportcentrum"],c:0},
+ {q:"Wat doe je als persoonlijke omstandigheden invloed hebben op je studie?",t:"radio",o:["Verzwijgen","Bespreken met een studiecoach of studentendecaan","Alle lessen overslaan","Je uitschrijven"],c:1},
+ {q:"Welke ondersteuning kan een studentendecaan vaak bieden?",t:"radio",o:["Studieadvies en ondersteuning bij bijzondere omstandigheden","Programmeerlessen","Rijlessen","Sporttraining"],c:0},
+ {q:"Wat is slim als je merkt dat je achterloopt met opdrachten?",t:"radio",o:["Afwachten","Op tijd hulp zoeken en een planning maken","De opdracht vergeten","Alleen hopen op geluk"],c:1}
+],
+4:[
+ {q:"Wat doet een softwareontwikkelaar (developer)?",t:"radio",o:["Computers repareren","Programma's en apps bouwen","Netwerken aanleggen","Websites verkopen"],c:1},
+ {q:"Welke ICT-professional beschermt systemen tegen hackers?",t:"radio",o:["Data-analist","UX-designer","Cybersecurity-specialist","Projectmanager"],c:2},
+ {q:"Wat is een belangrijk onderdeel van het werk van een data-analist?",t:"radio",o:["Data verzamelen en analyseren","Computers assembleren","Software verkopen","Kabels trekken"],c:0},
+ {q:"Waar staat de afkorting ICT voor?",t:"radio",o:["Internet & Computer Technology","Informatie- en Communicatietechnologie","International Computer Training","Information Coding Team"],c:1},
+ {q:"Welk beroep houdt zich vooral bezig met gebruikerservaring?",t:"radio",o:["UX/UI Designer","Systeembeheerder","Tester","Netwerkbeheerder"],c:0},
+ {q:"Wat doet een systeembeheerder?",t:"radio",o:["Ontwerpt logo's","Beheert computers, servers en netwerken","Verkoopt software","Maakt video's"],c:1},
+ {q:"Welke programmeertaal wordt veel gebruikt voor websites?",t:"radio",o:["HTML","JavaScript","Photoshop","Excel"],c:1},
+ {q:"Wat doet een ICT-projectmanager?",t:"radio",o:["Programmeert de hele applicatie zelf","Stuurt projecten en teams aan","Repareert laptops","Ontwerpt databases"],c:1},
+ {q:"Welke vaardigheid is belangrijk in bijna alle ICT-beroepen?",t:"radio",o:["Probleemoplossend denken","Goed kunnen tekenen","Hard kunnen typen","Vreemde talen spreken"],c:0},
+ {q:"Wat is cloud computing?",t:"radio",o:["Opslag en diensten via internet","Een soort antivirus","Een programmeertaal","Een computeronderdeel"],c:0},
+ {q:"Hoeveel procent van de Nederlandse bedrijven gebruikt tegenwoordig digitale systemen of software? (vul een percentage in)",t:"open",min:90,max:100},
+ {q:"Welke zin hoor je het vaakst van een ICT'er?",t:"radio",o:["\u2018Heb je hem al opnieuw opgestart?\u2019","\u2018Dat ligt aan de printer.\u2019","\u2018Werkt op mijn computer.\u2019","Alle bovenstaande antwoorden"],c:3},
+ {q:"Noem zoveel mogelijk ICT-beroepen die je kent.",t:"open",score:false,text:true}
+],
+5:[
+ {q:"Welke soort drankautomaten heb je op de verdieping? (kies max. 2)",t:"multi",o:["Frisdrankautomaat","Warmedrankautomaat","Water bidon","Alles"],c:[0,1],max:2},
+ {q:"Hoeveel koffieapparaten kom je tegen op de verdieping?",t:"open",a:2},
+ {q:"Hoeveel frisdrankautomaten heb je op de verdieping?",t:"open",a:1},
+ {q:"Hoe kun je betalen bij de koffieautomaat op de verdieping?",t:"radio",o:["Cash","Bankpas","Beide"],c:1},
+ {q:"Moet je je eigen beker meenemen om warme drank te kunnen tappen?",t:"radio",o:["Ja","Nee"],c:0},
+ {q:"Hoe krijg je de deur van een lokaal open?",t:"radio",o:["Je loopt naar een docent als de deur op slot is","De deuren staan nooit op slot","Je wacht tot iemand langsloopt en vraagt het vriendelijk"],c:2},
+ {q:"Hoeveel liftgroepen hebben we op de verdieping?",t:"open",a:4},
+ {q:"Zijn er prullenbakken in de lokalen?",t:"radio",o:["Ja, in elk lokaal","Nee, enkel in de gang","In de gang heb je gescheiden afval"],c:2},
+ {q:"Hoeveel trappen zijn er?",t:"open",a:6},
+ {q:"Hoeveel personen mogen er maximaal in 1 lift?",t:"open",a:16},
+ {q:"Hoeveel brandslangen zijn er op de verdieping?",t:"open",a:4},
+ {q:"Hoeveel stiltecabines zijn er op de verdieping?",t:"open",a:4},
+ {q:"Hoeveel kopieerapparaten zijn er op de verdieping?",t:"open",a:2},
+ {q:"Hoeveel afvalbakgroepen hebben we in totaal op de verdieping?",t:"open",a:8},
+ {q:"Waar vind je de nooduitgangen op de verdieping?",t:"radio",o:["Alleen bij de liften","Alleen aan het einde van de gang","Op meerdere plekken, aangegeven met groene borden"],c:2},
+ {q:"Wat moet je doen als het brandalarm afgaat?",t:"radio",o:["Doorwerken tot de docent iets zegt","Direct het gebouw verlaten via de aangegeven vluchtroute","Eerst je spullen pakken"],c:1},
+ {q:"Waar kun je meestal je laptop opladen?",t:"radio",o:["Alleen in de kantine","Bij veel studie- en lesplekken in het gebouw","Dat is niet mogelijk"],c:1},
+ {q:"Hoe herken je een nooduitgang?",t:"radio",o:["Blauwe borden","Rode borden","Groene borden met een rennend figuur"],c:2},
+ {q:"Wat is de snelste manier om naar een andere verdieping te gaan?",t:"radio",o:["Lift of trap","Via de nooduitgang","Via een lokaal"],c:0},
+ {q:"Wat doe je wanneer een lokaal bezet blijkt te zijn?",t:"radio",o:["Gewoon naar binnen lopen","Overleggen met docent of medestudenten voor een alternatief","Wachten zonder iets te vragen"],c:1},
+ {q:"Waarom zijn afvalbakken gescheiden?",t:"radio",o:["Omdat dat verplicht is voor studenten","Voor afvalscheiding en duurzaamheid","Om de schoonmaker werk te geven"],c:1}
+],
+6:[
+ {q:"Waar kun je meestal samenwerken aan groepsopdrachten?",t:"radio",o:["Alleen thuis","In studie- of projectruimtes binnen de school","Alleen in de bibliotheek"],c:1},
+ {q:"Waarom is samenwerken belangrijk binnen HBO-ICT?",t:"radio",o:["Omdat je dan minder hoeft te doen","Omdat veel projecten in teams worden uitgevoerd","Omdat het verplicht is tijdens elke les"],c:1},
+ {q:"Waarom is samenwerken belangrijk tijdens je studie?",t:"radio",o:["Omdat je dan minder hoeft te doen","Omdat je van elkaar kunt leren","Omdat docenten dat leuk vinden","Omdat het verplicht is"],c:1},
+ {q:"Wat is een belangrijke eigenschap van een goede teamgenoot?",t:"radio",o:["Altijd gelijk willen hebben","Goed communiceren","Nooit vragen stellen","Alles zelf doen"],c:1},
+ {q:"Wat doe je als een teamgenoot een goed idee heeft?",t:"radio",o:["Negeren","Direct afkeuren","Luisteren en bespreken","Het idee overnemen zonder overleg"],c:2},
+ {q:"Wat is meestal de eerste stap bij een groepsopdracht?",t:"radio",o:["Het verslag inleveren","Taken verdelen en afspraken maken","De docent beoordelen","Een presentatie geven"],c:1},
+ {q:"Welke vaardigheid helpt het meest bij samenwerken?",t:"radio",o:["Luisteren","Gokken","Uitstellen","Stil blijven"],c:0},
+ {q:"Wat doe je als er onenigheid ontstaat binnen een groep?",t:"radio",o:["Stoppen met samenwerken","Het probleem bespreken","Iedereen blokkeren","De opdracht negeren"],c:1},
+ {q:"Waar of niet waar: een groep werkt vaak beter als iedereen dezelfde taak uitvoert.",t:"radio",o:TF,c:1},
+ {q:"Wat is een voordeel van samenwerken met studenten uit verschillende achtergronden?",t:"radio",o:["Meer verschillende idee\u00EBn en perspectieven","Minder discussie","Kortere lessen","Minder werk"],c:0},
+ {q:"Wat betekent het om respectvol samen te werken?",t:"radio",o:["Alleen luisteren naar vrienden","Iedereen laten uitspreken en waarderen","Altijd je eigen zin krijgen","Nooit feedback geven"],c:1},
+ {q:"Wat gebeurt er meestal in een groepschat vlak voor de deadline?",t:"radio",o:["Iedereen is perfect voorbereid","Er verschijnen ineens veel berichten","Niemand reageert meer","De opdracht verdwijnt vanzelf"],c:1},
+ {q:"Hoeveel nieuwe medestudenten denk je gemiddeld te leren kennen tijdens je eerste semester?",t:"open",score:false},
+ {q:"Noem \u00E9\u00E9n manier waarop je een nieuwe medestudent beter kunt leren kennen.",t:"open",score:false,text:true}
+],
+7:[
+ {q:"Hoeveel modules zijn er in leerjaar 1?",t:"open",a:6},
+ {q:"Wat is meestal de belangrijkste taak van een docent?",t:"radio",o:["Roosters maken","Studenten begeleiden en lesgeven","Cijfers bedenken","Computers repareren"],c:1},
+ {q:"Waarom is het slim om actief mee te doen tijdens de les?",t:"radio",o:["De les duurt dan korter","Je leert de stof beter begrijpen","Je krijgt automatisch hogere cijfers","Dan hoef je niet te studeren"],c:1},
+ {q:"Wat doe je als je een opdracht niet begrijpt?",t:"radio",o:["Niets","Wachten tot de deadline","Je docent om uitleg vragen","De opdracht overslaan"],c:2},
+ {q:"Waar of niet waar: docenten verwachten dat studenten zelfstandig leren werken.",t:"radio",o:TF,c:0},
+ {q:"Wat is vaak een onderdeel van een eerstejaarsvak?",t:"radio",o:["Theorie en praktijkopdrachten","Alleen examens","Alleen groepswerk","Alleen presentaties"],c:0},
+ {q:"Waarom krijg je in het eerste jaar vaak groepsopdrachten?",t:"radio",o:["Om samenwerking te oefenen","Omdat docenten minder werk willen","Omdat individuele opdrachten verboden zijn","Voor extra vrije tijd"],c:0},
+ {q:"Wat betekent het als een vak 5 EC waard is?",t:"radio",o:["Dat het ongeveer 5 studiepunten oplevert","Dat het 5 lessen heeft","Dat het 5 weken duurt","Dat je een 5 moet halen"],c:0},
+ {q:"Wat is een goede gewoonte bij het volgen van eerstejaarsvakken?",t:"radio",o:["Op tijd beginnen met opdrachten","Alles bewaren tot de laatste dag","Alleen leren voor toetsen","Nooit vragen stellen"],c:0},
+ {q:"Waar of niet waar: feedback van een docent kan je helpen om beter te worden.",t:"radio",o:TF,c:0},
+ {q:"Hoeveel verschillende docenten denk je gemiddeld te hebben in je eerste studiejaar?",t:"open",score:false},
+ {q:"Welk vak lijkt jou op dit moment het interessantst en waarom?",t:"open",score:false,text:true},
+ {q:"Welke zin hoor je waarschijnlijk het vaakst van een docent?",t:"radio",o:["\u2018Staat in Brightspace.\u2019","\u2018Hebben jullie nog vragen?\u2019","\u2018Dit komt terug op het tentamen.\u2019","Alle bovenstaande antwoorden"],c:3,score:false},
+ {q:"Wat is volgens jou de grootste uitdaging van het eerste studiejaar?",t:"radio",o:["Plannen","Nieuwe mensen leren kennen","De lesstof","Alles combineren","Alle bovenstaande kunnen goed zijn"],score:false}
+]
+};
 
-/* rotatievolgorde voor een team: start, start+1, … (mod N) */
-function order(start){ const o=[]; for(let i=0;i<N;i++) o.push((start+i)%N); return o; }
-function nextCat(state, currentK){
-  const o=order(state.start);
-  const startPos = (currentK==null) ? -1 : o.indexOf(currentK);
-  for(let j=1;j<=N;j++){ const c=o[(startPos+j)%N]; if(!state.solved[c]) return c; }
+/* ============ STATE ============ */
+function loadState(){
+  try{var s=JSON.parse(localStorage.getItem("unlock_state")); if(s) return s;}catch(e){}
+  return {group:null, done:{}};
+}
+function saveState(s){ try{localStorage.setItem("unlock_state",JSON.stringify(s));}catch(e){} }
+var STATE = loadState();
+
+/* rotatie: groep g start bij categorie g, daarna +1 */
+function rotationOrder(g){ var a=[]; for(var i=0;i<7;i++){ a.push(((g-1+i)%7)+1); } return a; }
+function nextCategory(){
+  if(!STATE.group) return null;
+  var order=rotationOrder(STATE.group);
+  for(var i=0;i<order.length;i++){ if(!STATE.done[order[i]]) return order[i]; }
   return null; // alles klaar
 }
-function allDone(state){ return state.solved.every(Boolean); }
 
-/* ===================== PROGRESSBALK ===================== */
-function drawProgress(state, currentK){
-  const bar=document.getElementById('codebar'), txt=document.getElementById('progresstxt');
-  if(!state){ bar.innerHTML=''; txt.textContent=''; return; }
-  bar.innerHTML = CATS.map((c,i)=>`
-    <div class="frag ${state.solved[i]?'done':''} ${i===currentK?'current':''}">
-      <div class="n">CAT ${i+1}</div>
-      <div class="v">${state.solved[i]?c.digit:'?'}</div>
-    </div>`).join('');
-  const done = state.solved.filter(Boolean).length;
-  txt.textContent = `${done} / ${N} categorieën gekraakt`;
+/* ============ HELPERS ============ */
+var app=document.getElementById("app");
+function el(html){ var d=document.createElement("div"); d.innerHTML=html; return d.firstElementChild; }
+function progressBar(){
+  var slots="";
+  for(var i=1;i<=7;i++){ slots += STATE.done[i] ? STATE.done[i] : "\u25A1"; slots+=(i<7?" ":""); }
+  var count=Object.keys(STATE.done).length;
+  return '<div class="progress">'+slots+'<small>'+count+' / 7 categorie\u00EBn voltooid</small></div>';
+}
+function lockSVG(){return '<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="#BCD400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';}
+function norm(v){ return (""+v).trim().toLowerCase(); }
+
+/* ============ ROUTER ============ */
+function router(){
+  var h=location.hash.replace(/^#/,"");
+  if(h==="beheer"){ renderBeheer(); return; }
+  var m;
+  if((m=h.match(/^start=(\d+)$/))){ renderStart(parseInt(m[1],10)); return; }
+  if((m=h.match(/^cat=(\d+)$/))){ renderCat(parseInt(m[1],10)); return; }
+  if(h==="finale"){ renderFinale(); return; }
+  renderLanding();
+}
+window.addEventListener("hashchange",router);
+
+/* ============ SCHERMEN ============ */
+function header(){
+  return '<p class="kicker">&gt; De Haagse Hogeschool \u00B7 introductieweek</p>'+
+         '<h1>Unlock <span class="g">HBO-ICT</span></h1>';
 }
 
-/* ===================== ROUTER ===================== */
-function route(){
-  const h=location.hash;
-  if(h.indexOf('#reset')===0){ localStorage.removeItem(KEY); location.hash=''; location.reload(); return; }
-  if(h.indexOf('#beheer')===0){ return renderAdmin(); }
-  const mCat=h.match(/#cat=(\d+)/);
-  if(mCat){ return renderCategory(parseInt(mCat[1],10)); }
-  const mStart=h.match(/#start=(\d+)/);
-  return renderStart(mStart?parseInt(mStart[1],10):null);
-}
-window.addEventListener('hashchange', route);
-
-/* ===================== STARTSCHERM ===================== */
-function renderStart(startOffset){
-  const app=document.getElementById('app');
-  let state=load();
-  if(state){ drawProgress(state); return renderStatus(state); }   // al gestart → toon status
-  const start = (startOffset!=null && startOffset>=0 && startOffset<N) ? startOffset : 0;
-  drawProgress(null);
-  app.innerHTML=`
-    <section class="card">
-      <h2>Welkom bij de missie 🔓</h2>
-      <p class="sub">Het eerste jaar is vergrendeld. Vul je groep in; daarna krijg je een hint naar de eerste verstopte QR-code.</p>
-      <label>Naam van je groep</label>
-      <input type="text" id="team" placeholder="bv. De Codekrakers" maxlength="40">
-      <label>Namen van de groepsleden (één per regel, max 9)</label>
-      <textarea id="members" placeholder="Sara&#10;Tom&#10;Noor&#10;…"></textarea>
-      <button id="startBtn">▶ Start de missie</button>
-      <div class="msg" id="m"></div>
-      ${startOffset==null?'<p class="note">Tip: open dit scherm via de START-QR van je groep, dan begin je bij de juiste categorie.</p>':''}
-    </section>`;
-  document.getElementById('startBtn').onclick=()=>{
-    const team=document.getElementById('team').value.trim();
-    const members=document.getElementById('members').value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,9);
-    const m=document.getElementById('m');
-    if(!team){ m.className='msg err'; m.textContent='✗ Vul een groepsnaam in.'; return; }
-    if(members.length<1){ m.className='msg err'; m.textContent='✗ Vul minstens één groepslid in.'; return; }
-    const s=freshState(start); s.team=team; s.members=members; save(s);
-    renderStatus(s); drawProgress(s);
-  };
+function renderLanding(){
+  app.innerHTML = header()+
+   '<p class="sub">Welkom! Scan de QR-code die je hebt gekregen om te beginnen.</p>'+
+   '<div class="story">Je eerste jaar zit <b>op slot</b>. Samen met je squad kraak je zeven categorie\u00EBn, verzamel je zeven cijfers en open je de mastercode. Veel succes!</div>'+
+   '<button class="btn-ghost noprint" onclick="location.hash=\'beheer\'">Beheer & QR-codes (organisatie)</button>';
 }
 
-/* status / "waar nu heen" scherm */
-function renderStatus(state){
-  const app=document.getElementById('app');
-  drawProgress(state);
-  if(allDone(state)) return renderAccess(state);
-  const nxt=nextCat(state);
-  const isFirst = state.solved.every(v=>!v);
-  app.innerHTML=`
-    <section class="card">
-      <h2>${isFirst?'Veel succes, ':'Door naar de volgende, '}${escapeHtml(state.team)}! 🚀</h2>
-      <p class="sub">${state.members.map(escapeHtml).join(' · ')}</p>
-      <div class="hint">
-        <div class="lab">${isFirst?'Eerste QR-code zoeken':'Volgende QR-code zoeken'}</div>
-        <div class="txt">${CATS[nxt].hint}</div>
-      </div>
-      <p class="note">Gevonden? Scan de QR-code met je telefoon om <b>${escapeHtml(CATS[nxt].name)}</b> te openen.</p>
-    </section>`;
+function renderStart(g){
+  if(g<1||g>7){ renderLanding(); return; }
+  STATE.group=g; STATE.done={}; saveState(STATE);
+  var first=g; var cat=CATS[first-1];
+  app.innerHTML = header()+
+   '<p class="sub">Jullie zijn <b style="color:var(--lime)">Groep '+g+'</b>.</p>'+
+   progressBar()+
+   '<div class="story">Welkom, squad! Het systeem kent jullie nog niet. Kraak alle zeven categorie\u00EBn om je eerste jaar te ontgrendelen. Jullie beginnen bij <b>categorie '+first+'</b>.</div>'+
+   '<div class="hintbox"><span class="lbl">Zoek deze QR-code:</span>'+cat.hint+'</div>'+
+   '<p class="note">Zodra jullie de QR-code gevonden hebben, scan je hem met dit toestel. Gebruik per groep \u00E9\u00E9n telefoon, zodat jullie voortgang bewaard blijft.</p>';
 }
 
-/* ===================== CATEGORIE met vragen ===================== */
-function renderCategory(k){
-  const app=document.getElementById('app');
-  const state=load();
-  if(!state || !state.team){
-    drawProgress(null);
-    app.innerHTML=`<section class="card"><h2>Scan eerst jullie START-QR</h2>
-      <p class="sub">Begin met de START-QR van je groep om je groepsnaam in te vullen.</p>
-      <button class="ghost" onclick="location.hash=''">Naar het startscherm</button></section>`;
+function renderCat(cn){
+  if(cn<1||cn>7){ renderLanding(); return; }
+  var cat=CATS[cn-1]; var qs=Q[cn];
+  var body=header()+
+   '<p class="sub">Categorie '+cn+' \u2014 <b>'+cat.name+'</b></p>'+
+   progressBar();
+  if(STATE.done[cn]){
+    body+='<div class="reveal">'+lockSVG()+'<p class="granted">&gt;&gt; AL VOLTOOID</p><div class="big">'+cat.digit+'</div><p>Deze categorie hebben jullie al gehaald (cijfer '+cat.digit+', positie '+cn+').</p></div>';
+    app.innerHTML=body+nextBlock(cn);
     return;
   }
-  if(k<0||k>=N){ location.hash=''; return; }
-  drawProgress(state,k);
-  const cat=CATS[k];
-  if(state.solved[k]) return categorySolvedView(state,k);
-  app.innerHTML=`
-    <section class="card">
-      <span class="pill">Categorie ${k+1} / ${N}</span>
-      <h2>${escapeHtml(cat.name)}</h2>
-      <p class="sub">Beantwoord <b>alle ${cat.questions.length} vragen goed</b> om het cijfer te onthullen. Fouten worden rood gemarkeerd — verbeter ze en controleer opnieuw.</p>
-      <div id="qs">${cat.questions.map((q,i)=>questionHtml(q,i)).join('')}</div>
-      <button id="check">Controleer antwoorden</button>
-      <div class="msg" id="m"></div>
-      <div id="rev"></div>
-    </section>`;
-  document.getElementById('check').onclick=()=>checkCategory(k);
+  body+='<div id="quiz"></div>'+
+        '<button class="btn-go" id="check">Controleer antwoorden</button>'+
+        '<p class="status" id="status"></p>'+
+        '<div id="result"></div>';
+  app.innerHTML=body;
+  var quiz=document.getElementById("quiz");
+  qs.forEach(function(qo,idx){ quiz.appendChild(renderQuestion(qo,idx)); });
+  document.getElementById("check").addEventListener("click",function(){ checkCat(cn); });
 }
 
-function questionHtml(q,i){
-  return `<div class="q" id="q${i}">
-    <div class="qtext"><span class="qmark" id="mk${i}"></span>${i+1}. ${q.q}</div>
-    <div class="opts">${q.opts.map((o,j)=>`
-      <label class="opt"><input type="radio" name="q${i}" value="${j}"> <span>${o}</span></label>`).join('')}</div>
-  </div>`;
+function renderQuestion(qo,idx){
+  var inner='<p class="q">'+(idx+1)+'. '+qo.q+'</p>';
+  var name="q"+idx;
+  if(qo.t==="radio"){
+    qo.o.forEach(function(opt,i){
+      inner+='<label class="opt"><input type="radio" name="'+name+'" value="'+i+'"><span>'+opt+'</span></label>';
+    });
+  } else if(qo.t==="multi"){
+    inner+='<p class="note" style="margin:0 0 6px">Kies '+(qo.max?'max. '+qo.max:'')+' antwoorden.</p>';
+    qo.o.forEach(function(opt,i){
+      inner+='<label class="opt"><input type="checkbox" name="'+name+'" value="'+i+'"><span>'+opt+'</span></label>';
+    });
+  } else if(qo.t==="open"){
+    var typ=qo.text?'text':'number';
+    inner+='<input type="'+typ+'" name="'+name+'" placeholder="'+(qo.text?'Typ je antwoord':'Typ een getal')+'">';
+  }
+  var card=el('<div class="card" id="card'+idx+'">'+inner+
+    '<span class="badge ok">\u2713 juist</span><span class="badge no">nog niet juist</span></div>');
+  if(qo.score===false){
+    card.classList.add("nonscore");
+    var tag=document.createElement("div"); tag.className="tag"; tag.textContent="LEUKE VRAAG \u2014 TELT NIET MEE";
+    card.insertBefore(tag, card.firstChild);
+  }
+  return card;
 }
 
-function checkCategory(k){
-  const cat=CATS[k]; let good=0, answered=0;
-  cat.questions.forEach((q,i)=>{
-    const sel=document.querySelector(`input[name="q${i}"]:checked`);
-    const box=document.getElementById('q'+i), mk=document.getElementById('mk'+i);
-    box.classList.remove('correct','wrong');
-    if(sel){ answered++;
-      if(parseInt(sel.value,10)===q.a){ good++; box.classList.add('correct'); mk.textContent='✓ goed'; }
-      else { box.classList.add('wrong'); mk.textContent='✗ fout'; }
-    } else { box.classList.add('wrong'); mk.textContent='— niet beantwoord'; }
-  });
-  const m=document.getElementById('m');
-  if(good===cat.questions.length){
-    const state=load(); state.solved[k]=true; save(state);
-    m.className='msg ok'; m.textContent='✔ Alles goed! Cijfer ontgrendeld.';
-    document.getElementById('check').disabled=true;
-    drawProgress(state,k);
-    revealAfterSolve(state,k);
+function getResponse(qo,idx){
+  var name="q"+idx;
+  if(qo.t==="radio"){
+    var r=document.querySelector('input[name="'+name+'"]:checked');
+    return r?parseInt(r.value,10):null;
+  } else if(qo.t==="multi"){
+    var arr=[]; document.querySelectorAll('input[name="'+name+'"]:checked').forEach(function(c){arr.push(parseInt(c.value,10));});
+    return arr;
   } else {
-    m.className='msg err';
-    m.textContent=`✗ ${good} van ${cat.questions.length} goed. Verbeter de rode vragen en controleer opnieuw.`;
+    var inp=document.querySelector('input[name="'+name+'"]'); return inp?inp.value:"";
   }
 }
-
-function revealAfterSolve(state,k){
-  const rev=document.getElementById('rev');
-  let html=`<div class="reveal">Vrijgavecode-fragment<br><span class="big">${CATS[k].digit}</span></div>`;
-  if(allDone(state)){
-    rev.innerHTML=html;
-    setTimeout(()=>renderAccess(state),900);
-    return;
+function isCorrect(qo,resp){
+  if(qo.score===false) return true;
+  if(qo.t==="radio") return resp===qo.c;
+  if(qo.t==="multi"){
+    if(!resp||resp.length!==qo.c.length) return false;
+    var a=resp.slice().sort(), b=qo.c.slice().sort();
+    for(var i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; }
+    return true;
   }
-  const nxt=nextCat(state,k);
-  html+=`<div class="hint"><div class="lab">Volgende QR-code zoeken</div>
-    <div class="txt">${CATS[nxt].hint}</div></div>
-    <p class="note">Gevonden? Scan de QR-code om <b>${escapeHtml(CATS[nxt].name)}</b> te openen.</p>`;
-  rev.innerHTML=html;
-  rev.scrollIntoView({behavior:'smooth',block:'center'});
+  if(qo.t==="open"){
+    if(resp===""||resp==null) return false;
+    if(qo.min!=null){ var n=parseFloat((""+resp).replace(",",".")); return !isNaN(n)&&n>=qo.min&&n<=qo.max; }
+    if(typeof qo.a==="number"){ var n2=parseFloat((""+resp).replace(",",".")); return n2===qo.a; }
+    return norm(resp)===norm(qo.a);
+  }
+  return false;
 }
 
-function categorySolvedView(state,k){
-  const app=document.getElementById('app');
-  const done=allDone(state); const nxt=done?null:nextCat(state,k);
-  app.innerHTML=`
-    <section class="card">
-      <span class="pill">Categorie ${k+1} / ${N}</span>
-      <h2>${escapeHtml(CATS[k].name)}</h2>
-      <div class="reveal">Deze categorie is al gekraakt ✓<br><span class="big">${CATS[k].digit}</span></div>
-      ${done?`<button onclick="location.hash=''">Naar de finale</button>`:`
-        <div class="hint"><div class="lab">Volgende QR-code zoeken</div><div class="txt">${CATS[nxt].hint}</div></div>
-        <p class="note">Scan de QR-code om <b>${escapeHtml(CATS[nxt].name)}</b> te openen.</p>`}
-    </section>`;
-}
-
-/* ===================== FINALE ===================== */
-function renderAccess(state){
-  const app=document.getElementById('app'); drawProgress(state);
-  app.innerHTML=`
-    <section class="card" style="text-align:center">
-      <div class="granted">ACCESS GRANTED ✅</div>
-      <p class="sub">Alle ${N} categorieën gekraakt. De volledige mastercode:</p>
-      <div class="mastercode">${MASTER}</div>
-      <p class="sub">Welkom bij HBO-ICT — een eerste blik op het werkveld:</p>
-      <div class="jobs">${JOBS.map(j=>`<div class="job">${j}</div>`).join('')}</div>
-      <div style="border:2px solid var(--gold);border-radius:16px;padding:20px;margin:16px 0">
-        <div style="font-size:34px">🏅</div>
-        <h3 style="color:var(--gold);margin:6px 0">Missie compleet</h3>
-        <p class="sub" style="margin:4px 0">Groep <b>${escapeHtml(state.team)}</b> heeft de escaperoom ontgrendeld.</p>
-        <p class="sub" style="margin:4px 0">${state.members.map(escapeHtml).join(' · ')}</p>
-        <span class="pill">De finale loopt direct over in de borrel 🥂</span>
-      </div>
-      <button class="ghost" onclick="if(confirm('Voortgang wissen en opnieuw?')){localStorage.removeItem('${KEY}');location.hash='';location.reload();}">Opnieuw spelen</button>
-    </section>`;
-}
-
-/* ===================== BEHEER / QR-CODES PRINTEN ===================== */
-function renderAdmin(){
-  const app=document.getElementById('app'); drawProgress(null);
-  const defaultBase = location.href.split('#')[0];
-  app.innerHTML=`
-    <section class="card noprint">
-      <h2>🛠️ Beheer — QR-codes printen</h2>
-      <p class="sub">Vul de webadres (URL) in waar deze app online staat. De QR-codes wijzen daar dan naartoe. Print de pagina en verstop de categorie-QR's in het gebouw; geef elke groep een eigen START-QR.</p>
-      <label>Basis-URL van de app</label>
-      <input type="text" id="base" value="${escapeAttr(defaultBase)}">
-      <button id="gen">QR-codes genereren</button>
-      <button class="ghost" onclick="window.print()">🖨️ Printen</button>
-      <p class="note">QR-afbeeldingen worden gemaakt met de gratis dienst api.qrserver.com (internet nodig tijdens het printen).</p>
-    </section>
-    <div id="qrout"></div>`;
-  document.getElementById('gen').onclick=drawQRs;
-  drawQRs();
-  function drawQRs(){
-    const base=document.getElementById('base').value.trim().replace(/#.*$/,'');
-    const qr=(data)=>`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(data)}`;
-    const out=document.getElementById('qrout');
-    let starts=`<section class="card"><h3>START-QR's — geef elke groep een andere</h3><div class="qrgrid">`;
-    for(let i=0;i<N;i++){
-      starts+=`<div class="qrcard"><img src="${qr(base+'#start='+i)}" alt="start ${i+1}">
-        <div class="t">START · Groep ${i+1}</div><div class="d">begint bij: ${escapeHtml(CATS[i].name)}</div></div>`;
+function checkCat(cn){
+  var qs=Q[cn]; var allOk=true, scored=0, ok=0;
+  qs.forEach(function(qo,idx){
+    var card=document.getElementById("card"+idx);
+    card.classList.remove("correct","wrong");
+    var resp=getResponse(qo,idx);
+    var good=isCorrect(qo,resp);
+    if(qo.score!==false){
+      scored++;
+      if(good){ ok++; card.classList.add("correct"); }
+      else { allOk=false; if(resp!==null&&!(Array.isArray(resp)&&resp.length===0)&&resp!=="") card.classList.add("wrong"); }
     }
-    starts+=`</div></section>`;
-    let cats=`<section class="card"><h3>CATEGORIE-QR's — verstop deze in het gebouw</h3><div class="qrgrid">`;
-    for(let i=0;i<N;i++){
-      cats+=`<div class="qrcard"><img src="${qr(base+'#cat='+i)}" alt="cat ${i+1}">
-        <div class="t">Categorie ${i+1}: ${escapeHtml(CATS[i].name)}</div><div class="d">verstop bij: ${escapeHtml(CATS[i].hint)}</div></div>`;
-    }
-    cats+=`</div></section>`;
-    out.innerHTML=starts+cats;
+  });
+  var status=document.getElementById("status");
+  var result=document.getElementById("result");
+  if(allOk){
+    status.textContent=ok+" / "+scored+" goed \u2014 code vrijgegeven!";
+    STATE.done[cn]=CATS[cn-1].digit; saveState(STATE);
+    document.getElementById("check").style.display="none";
+    result.innerHTML=
+      '<div class="reveal">'+lockSVG()+
+      '<p class="granted">&gt;&gt; CATEGORIE '+cn+' GEKRAAKT</p>'+
+      '<div class="big">'+CATS[cn-1].digit+'</div>'+
+      '<p>Dit is cijfer <b>'+CATS[cn-1].digit+'</b> op <b>positie '+cn+'</b> van de mastercode.</p></div>'+
+      nextBlock(cn);
+    result.scrollIntoView({behavior:"smooth",block:"center"});
+    // update progress bar bovenaan
+    var pb=document.querySelector(".progress"); if(pb) pb.outerHTML=progressBar();
+  } else {
+    status.textContent=ok+" / "+scored+" goed \u2014 de juiste staan groen. Pas de rest aan.";
+    result.innerHTML="";
   }
 }
 
-/* ===================== HELPERS ===================== */
-function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
-function escapeAttr(s){return String(s).replace(/"/g,'&quot;');}
+function nextBlock(cn){
+  var nx=nextCategory();
+  if(nx){
+    var cat=CATS[nx-1];
+    return '<div class="hintbox"><span class="lbl">Volgende QR-code \u2014 zoek deze plek:</span>'+cat.hint+'</div>'+
+           '<p class="note">Gevonden? Scan de QR-code van categorie '+nx+' met dit toestel.</p>';
+  }
+  return '<div class="story" style="margin-top:18px"><b>Alle zeven categorie\u00EBn gehaald!</b> Tijd voor de mastercode.</div>'+
+         '<button class="btn-go" onclick="location.hash=\'finale\'">Naar de mastercode \u2192</button>';
+}
 
-route();
+function renderFinale(){
+  var count=Object.keys(STATE.done).length;
+  var body=header()+'<p class="sub">De finale</p>'+progressBar();
+  if(count<7){
+    body+='<div class="story">Jullie hebben nog niet alle zeven cijfers. Ga terug en kraak de overige categorie\u00EBn.</div>';
+    var nx=nextCategory();
+    if(nx){ body+='<div class="hintbox"><span class="lbl">Volgende QR-code:</span>'+CATS[nx-1].hint+'</div>'; }
+    app.innerHTML=body; return;
+  }
+  body+='<div class="story">Jullie hebben alle zeven cijfers verzameld. Voer de volledige <b>mastercode</b> in om je eerste jaar te ontgrendelen.</div>'+
+        '<div class="card"><p class="q">Mastercode (7 cijfers)</p><input type="text" id="mc" inputmode="numeric" placeholder="\u2022 \u2022 \u2022 \u2022 \u2022 \u2022 \u2022"></div>'+
+        '<button class="btn-go" id="unlock">Ontgrendelen</button>'+
+        '<p class="status" id="status"></p><div id="result"></div>';
+  app.innerHTML=body;
+  document.getElementById("unlock").addEventListener("click",function(){
+    var v=document.getElementById("mc").value.replace(/\s/g,"");
+    if(v===MASTERCODE){
+      document.getElementById("unlock").style.display="none";
+      document.getElementById("status").textContent="";
+      document.getElementById("result").innerHTML=
+        '<div class="reveal">'+lockSVG()+'<p class="granted">&gt;&gt; ACCESS GRANTED</p>'+
+        '<div class="big">'+MASTERCODE.split("").join(" ")+'</div>'+
+        '<p>Jullie eerste jaar is ontgrendeld. Welkom bij HBO-ICT \u2014 tijd om te proosten! \uD83C\uDF89</p></div>';
+      document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
+    } else {
+      document.getElementById("status").textContent="Nog niet juist \u2014 controleer de cijfers en hun volgorde.";
+    }
+  });
+}
+
+/* ============ BEHEER ============ */
+function renderBeheer(){
+  var base = location.origin + location.pathname;
+  app.innerHTML = header()+
+   '<p class="sub">Beheer \u2014 QR-codes genereren en printen</p>'+
+   '<div class="story">Vul het webadres in waar deze app online staat. De QR-codes wijzen daar dan naartoe. Print de pagina, hang de <b>categorie-QR\u2019s</b> op hun verstopplek, en leg de <b>7 START-QR\u2019s</b> klaar op de startlocatie (\u00E9\u00E9n per groep).</div>'+
+   '<div class="field"><label>Basis-URL van de app</label><input type="text" id="base" value="'+base+'"></div>'+
+   '<div class="row noprint"><button class="btn-go" id="gen" style="width:auto">QR-codes genereren</button>'+
+   '<button class="btn-ghost" onclick="window.print()">Printen</button>'+
+   '<button class="btn-ghost" onclick="resetSpel()">Voortgang wissen (test)</button></div>'+
+   '<div id="qrs"></div>'+
+   '<div class="sectiontitle">Overzicht voor de organisatie</div>'+
+   refTable()+
+   '<p class="note">QR-afbeeldingen worden gemaakt met de gratis dienst api.qrserver.com (internet nodig tijdens genereren/printen). Mastercode: <b>'+MASTERCODE+'</b>.</p>';
+  document.getElementById("gen").addEventListener("click",genQR);
+}
+function refTable(){
+  var rows="";
+  CATS.forEach(function(c){ rows+='<tr><td>'+c.n+'</td><td>'+c.name+'</td><td>'+c.digit+'</td><td>positie '+c.n+'</td></tr>'; });
+  var rot="";
+  for(var g=1;g<=7;g++){ rot+='<tr><td>Groep '+g+'</td><td>'+rotationOrder(g).join(" \u2192 ")+'</td></tr>'; }
+  return '<table class="reftable"><tr><th>Cat</th><th>Categorie</th><th>Cijfer</th><th>Plek in code</th></tr>'+rows+'</table>'+
+         '<div class="sectiontitle">Rotatie per groep (start \u2192 volgorde)</div>'+
+         '<table class="reftable"><tr><th>Groep</th><th>Volgorde categorie\u00EBn</th></tr>'+rot+'</table>';
+}
+function qrImg(url){ return '<img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data='+encodeURIComponent(url)+'">'; }
+function genQR(){
+  var base=document.getElementById("base").value.trim().replace(/#.*$/,"");
+  var out='<div class="sectiontitle">START-QR\u2019s (op de startlocatie, \u00E9\u00E9n per groep)</div><div class="qrgrid">';
+  for(var g=1;g<=7;g++){
+    var url=base+"#start="+g;
+    out+='<div class="qrcard"><h4>START \u2014 Groep '+g+'</h4><div class="meta">Begint bij categorie '+g+'</div>'+qrImg(url)+'</div>';
+  }
+  out+='</div><div class="sectiontitle">Categorie-QR\u2019s (elk op zijn verstopplek)</div><div class="qrgrid">';
+  CATS.forEach(function(c){
+    var url=base+"#cat="+c.n;
+    out+='<div class="qrcard"><h4>Cat '+c.n+' \u2014 '+c.name+'</h4><div class="meta">Cijfer '+c.digit+' (positie '+c.n+')<br>'+c.hint.slice(0,60)+'\u2026</div>'+qrImg(url)+'</div>';
+  });
+  out+='</div>';
+  document.getElementById("qrs").innerHTML=out;
+}
+function resetSpel(){ STATE={group:null,done:{}}; saveState(STATE); alert("Voortgang gewist."); }
+
+/* start */
+router();
 </script>
 </body>
 </html>
